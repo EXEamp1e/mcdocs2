@@ -37,6 +37,7 @@ jobs:
           if [[ "$file" != *.min.js ]]; then
             npx terser "$file" --compress --mangle > "$file.tmp"
             mv "$file.tmp" "$file"
+            echo "✅ Minified: $file"
           fi
         done
 
@@ -45,6 +46,7 @@ jobs:
         for file in site/css/*.css; do
           if [[ "$file" != *.min.css ]]; then
             cleancss -O1 -o "$file" "$file"
+            echo "✅ Minified: $file"
           fi
         done
 
