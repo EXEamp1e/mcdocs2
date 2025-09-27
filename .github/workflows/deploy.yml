@@ -6,181 +6,40 @@ on:
   pull_request:
     branches: [ main ]
 
-env:
-  NODE_VERSION: '18'
-  PYTHON_VERSION: '3.10'
-
 jobs:
-  test-frontend:
-    name: Test Frontend Assets
+  deploy:
     runs-on: ubuntu-latest
-
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+    - uses: actions/checkout@v4
+
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.12'
 
     - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
-        node-version: ${{ env.NODE_VERSION }}
-        cache: 'npm'
+        node-version: "20.17.0"
 
     - name: Install dependencies
-      run: |
-        npm ci
-        npm install -g postcss-cli cssnano clean-css-cli html-minifier-terser
-
-    - name: Lint CSS files
-      run: |
-        if [ -d "customTheme/css" ]; then
-          npx stylelint "customTheme/css/**/*.css" || true
-        fi
-
-    - name: Check JavaScript syntax
-      run: |
-        if [ -d "customTheme/js" ]; then
-          npx eslint "customTheme/js/**/*.js" --no-eslintrc --config='{"extends":"eslint:recommended"}' || true
-        fi
-
-  build-assets:
-    name: Build Frontend Assets
-    runs-on: ubuntu-latest
-    needs: test-frontend
-
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: ${{ env.NODE_VERSION }}
-        cache: 'npm'
+      run: pip install mkdocs mkdocs-material
 
     - name: Install dependencies
-      run: |
-        npm ci
-        npm install -g postcss-cli cssnano autoprefixer postcss-preset-env
+      run: npm ci
 
-    - name: Build CSS with PostCSS
-      run: |
-        if [ -d "customTheme/css" ]; then
-          postcss customTheme/css/**/*.css --dir assets/css/ --config postcss.config.js --env production
-        fi
+    - name: Build site
+      run: mkdocs build
+
+    - name: Validate HTML
+      uses: Cyb3r-Jak3/html5-validator-action@v1
+
+    - name: Minify JS
+      run: npx terser script.js -o script.min.js --compress --mangle
 
     - name: Minify CSS
-      run: |
-        if [ -d "assets/css" ]; then
-          find assets/css -name "*.css" -exec npx cleancss -o {} {} \;
-        fi
-
-    - name: Process JavaScript
-      run: |
-        if [ -d "customTheme/js" ]; then
-          mkdir -p assets/js
-          for jsfile in customTheme/js/*.js; do
-            if [ -f "$jsfile" ]; then
-              filename=$(basename "$jsfile")
-              npx terser "$jsfile" -o "assets/js/${filename}" --compress --mangle
-            fi
-          done
-        fi
-
-    - name: Upload assets artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: frontend-assets
-        path: |
-          assets/
-        retention-days: 1
-
-  # Этап 3: Валидация HTML
-  validate-html:
-    name: Validate HTML
-    runs-on: ubuntu-latest
-    needs: build-assets
-
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-
-    - name: Download assets
-      uses: actions/download-artifact@v4
-      with:
-        name: frontend-assets
-        path: assets/
-
-    - name: Setup Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: ${{ env.PYTHON_VERSION }}
-
-    - name: Install MkDocs
-      run: |
-        pip install mkdocs mkdocs-material
-        pip install mkdocs-minify-plugin mkdocs-redirects
-
-    - name: Build site for validation
-      run: |
-        mkdocs build --site-dir ./build --strict
-
-    - name: Install html5validator
-      run: pip install html5validator
-
-    - name: HTML5 validation
-      run: |
-        if [ -d "site" ]; then
-          html5validator --root site --ignore "gitignore" || true
-        fi
-
-    - name: Check for broken links
-      run: |
-        pip install linkchecker
-        linkchecker build/ --check-extern --no-status --no-warnings || true
-
-  build-site:
-    name: Build Site with Minification
-    runs-on: ubuntu-latest
-    needs: [validate-html, build-assets]
-
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-
-    - name: Download assets
-      uses: actions/download-artifact@v4
-      with:
-        name: frontend-assets
-        path: assets/
-
-    - name: Setup Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: ${{ env.PYTHON_VERSION }}
-
-    - name: Install build dependencies
-      run: |
-        pip install mkdocs mkdocs-material
-
-    - name: Build site with minification
-      run: |
-        mkdocs build --site-dir ./site --clean
-
-    - name: Minify HTML files
-      run: |
-        if command -v html-minifier-terser &> /dev/null; then
-          find site -name "*.html" -exec html-minifier-terser \
-            --collapse-whitespace \
-            --remove-comments \
-            --remove-optional-tags \
-            --remove-redundant-attributes \
-            --remove-script-type-attributes \
-            --remove-tag-whitespace \
-            --use-short-doctype \
-            --minify-css true \
-            --minify-js true \
-            -o {} {} \;
-        fi
+      run: npx cssnano style.css style.min.css
+      run: npx cssnano style.css style.min.css
 
     - name: Deploy to GitHub Pages
       if: github.ref == 'refs/heads/main'
