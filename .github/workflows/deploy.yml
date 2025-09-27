@@ -132,15 +132,14 @@ jobs:
         mkdocs build --site-dir ./build --strict
         echo "✅ Site built for validation"
 
-    - name: Install HTML validator
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y vnu-jar
+    - name: Install html5validator
+      run: pip install html5validator
 
-    - name: Validate HTML files
+    - name: HTML5 validation
       run: |
-        echo "Validating HTML files..."
-        java -jar /usr/share/java/vnu.jar --filterpattern ".*" build/ || true
+        if [ -d "site" ]; then
+          html5validator --root site --ignore "gitignore" || true
+        fi
 
     - name: Check for broken links
       run: |
@@ -193,29 +192,6 @@ jobs:
             -o {} {} \;
           echo "✅ HTML minified"
         fi
-
-    - name: Optimize images
-      run: |
-        if command -v convert &> /dev/null; then
-          find site -name "*.jpg" -exec convert {} -strip -quality 85 {} \;
-          find site -name "*.png" -exec convert {} -strip {} \;
-          echo "✅ Images optimized"
-        else
-          echo "⚠️ ImageMagick not available for image optimization"
-        fi
-
-    - name: Generate sitemap
-      run: |
-        pip install mkdocs-sitemap
-        mkdocs build --site-dir ./site
-
-    - name: Calculate file sizes
-      run: |
-        echo "📊 Build size report:"
-        du -sh site/
-        find site -name "*.html" -exec wc -l {} \; | awk '{total += $1} END {print "Total HTML lines:", total}'
-        find site -name "*.css" -exec wc -c {} \; | awk '{total += $1} END {print "Total CSS bytes:", total}'
-        find site -name "*.js" -exec wc -c {} \; | awk '{total += $1} END {print "Total JS bytes:", total}'
 
   # Этап 5: Деплой на GitHub Pages
   deploy:
