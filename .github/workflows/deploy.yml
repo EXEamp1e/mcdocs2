@@ -39,7 +39,6 @@ jobs:
 
     - name: Minify CSS
       run: npx cssnano style.css style.min.css
-      run: npx cssnano style.css style.min.css
 
     - name: Deploy to GitHub Pages
       if: github.ref == 'refs/heads/main'
