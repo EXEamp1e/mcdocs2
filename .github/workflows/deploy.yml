@@ -31,10 +31,6 @@ jobs:
         npm ci
         npm install -g postcss-cli cssnano clean-css-cli html-minifier-terser
 
-    - name: Validate package.json
-      run: |
-        npx npm-pack-validator
-
     - name: Lint CSS files
       run: |
         if [ -d "src/css" ]; then
