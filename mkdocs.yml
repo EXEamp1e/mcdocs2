@@ -11,10 +11,3 @@ nav:
   - Главная: index.md
   - Кастомная тема: task2.md
 
-plugins:
-  - search
-
-markdown_extensions:
-  - toc:
-      permalink: true
-
