@@ -26,7 +26,7 @@ jobs:
       run: pip install mkdocs
 
     - name: Install dependencies
-      run: npm install -g cssnano-cli terser
+      run: npm install -g cssnano cssnano-cli terser
 
     - name: Build site
       run: mkdocs build
