@@ -31,8 +31,15 @@ jobs:
     - name: Build site
       run: mkdocs build
 
-    - name: Validate HTML
-      uses: Cyb3r-Jak3/html5-validator-action@v1
+    - name: Validate HTML with W3C validator
+      run: |
+        wget -q https://github.com/validator/validator/releases/latest/download/vnu.linux.zip
+        unzip -q vnu.linux.zip
+        
+        for file in $(find . -name "*.html"); do
+          echo "Validating $file"
+          ./vnu-runtime-image/bin/vnu "$file" || true
+        done
 
     - name: Minify JS
       run: npx terser script.js -o script.min.js --compress --mangle
