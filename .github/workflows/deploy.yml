@@ -25,20 +25,11 @@ jobs:
     - name: Install mkdocs
       run: pip install mkdocs
 
-    - name: Install dependencies
-      run: npm install -g clean-css-cli terser
-
     - name: Build site
       run: mkdocs build
 
-    - name: Validate HTML with W3C validator
-      run: |
-        wget -q https://github.com/validator/validator/releases/latest/download/vnu.linux.zip
-        unzip -q vnu.linux.zip
-        
-        for file in $(find ./site -name "*.html"); do
-          ./vnu-runtime-image/bin/vnu "$file" || true
-        done
+    - name: Install dependencies
+      run: npm install -g clean-css-cli terser
 
     - name: Minify JS
       run: |
@@ -55,6 +46,15 @@ jobs:
           if [[ "$file" != *.min.css ]]; then
             cleancss -O1 -o "$file" "$file"
           fi
+        done
+
+    - name: Validate HTML with W3C validator
+      run: |
+        wget -q https://github.com/validator/validator/releases/latest/download/vnu.linux.zip
+        unzip -q vnu.linux.zip
+        
+        for file in $(find ./site -name "*.html"); do
+          ./vnu-runtime-image/bin/vnu "$file" || true
         done
 
     - name: Deploy to GitHub Pages
