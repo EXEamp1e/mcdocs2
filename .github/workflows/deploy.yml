@@ -22,8 +22,11 @@ jobs:
       with:
         node-version: "20.17.0"
 
-    - name: Install dependencies
+    - name: Install mkdocs
       run: pip install mkdocs
+
+    - name: Install dependencies
+      run: npm install -g cssnano-cli terser
 
     - name: Build site
       run: mkdocs build
