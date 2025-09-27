@@ -1,26 +1,35 @@
 {
   "name": "mcdocs",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
   "scripts": {
-    "start": "browser-sync start --server src --no-notify --no-ui --cwd src --files index.html,styles/**/*",
-    "test": "editorconfig-checker",
-    "html": "html-minifier --remove-comments --collapse-whitespace --input-dir src --output-dir dist --file-ext html",
-    "styles": "postcss src/styles/index.css --use postcss-import --use postcss-csso --no-map --output dist/styles/index.css",
-    "build": "npm run html && npm run styles",
-    "serve": "serve"
+    "build:css": "postcss src/css/**/*.css --dir assets/css/ --config postcss.config.js",
+    "build:css:min": "postcss src/css/**/*.css --dir assets/css/ --env production",
+    "build:js": "terser src/js/main.js -o assets/js/main.min.js -c -m",
+    "build:assets": "npm run build:css:min && npm run build:js",
+    "validate:html": "html-validate site/**/*.html",
+    "test:lighthouse": "lighthouse http://localhost:8000 --output html --output-path ./lighthouse-report.html",
+    "optimize:images": "imagemin src/images/* --out-dir=assets/images",
+    "clean": "rm -rf assets/ site/ build/",
+    "dev": "npm run build:css && mkdocs serve"
   },
   "devDependencies": {
-    "browser-sync": "^2.26.7",
-    "editorconfig-checker": "^3.1.0",
-    "html-minifier": "^4.0.0",
-    "postcss-cli": "^7.1.1",
-    "postcss-csso": "^4.0.0",
-    "postcss-import": "^12.0.1"
+    "postcss": "^8.4.24",
+    "postcss-cli": "^10.1.0",
+    "postcss-preset-env": "^8.0.1",
+    "autoprefixer": "^10.4.14",
+    "cssnano": "^5.1.15",
+    "terser": "^5.16.1",
+    "clean-css-cli": "^5.6.2",
+    "html-minifier-terser": "^7.0.0",
+    "stylelint": "^15.0.0",
+    "eslint": "^8.0.0",
+    "lighthouse": "^9.0.0",
+    "pa11y": "^6.0.0",
+    "imagemin-cli": "^7.0.0"
   },
-  "dependencies": {
-    "serve": "^13.0.2"
-  },
-  "private": true
+  "browserslist": [
+    "> 1%",
+    "last 2 versions",
+    "not dead"
+  ]
 }
