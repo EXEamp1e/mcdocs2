@@ -1,0 +1,28 @@
+name: Test
+
+on:
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/sup-node@v4
+      with:
+        node-version: '20.17.0'
+
+    - name: Install html5validator
+      run: pip install html5validator
+
+    - name: HTML5 validation
+      run: |
+        if [ -d "site" ]; then
+          html5validator --root site --ignore "gitignore" || true
+        fi
