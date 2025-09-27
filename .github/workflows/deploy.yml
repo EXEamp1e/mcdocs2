@@ -23,10 +23,7 @@ jobs:
         node-version: "20.17.0"
 
     - name: Install dependencies
-      run: pip install mkdocs mkdocs-material
-
-    - name: Install dependencies
-      run: npm ci
+      run: pip install mkdocs
 
     - name: Build site
       run: mkdocs build
@@ -42,7 +39,7 @@ jobs:
 
     - name: Minify JS
       run: |
-        for file in site/*.js; do
+        for file in site/js/*.js; do
           if [[ "$file" != *.min.js ]]; then
             npx terser "$file" --compress --mangle > "$file.tmp"
             mv "$file.tmp" "$file"
@@ -51,7 +48,7 @@ jobs:
 
     - name: Minify CSS
       run: |
-        for file in site/*.css; do
+        for file in site/css/*.css; do
           if [[ "$file" != *.min.css ]]; then
             npx cssnano "$file" "$file.tmp"
             mv "$file.tmp" "$file"
