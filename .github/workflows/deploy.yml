@@ -97,8 +97,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: frontend-assets
-        path: |
-          assets/
+        path: assets/
         retention-days: 1
 
   # Этап 3: Валидация HTML
