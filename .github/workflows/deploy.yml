@@ -26,7 +26,7 @@ jobs:
       run: pip install mkdocs
 
     - name: Install dependencies
-      run: npm install -g cssnano cssnano-cli terser
+      run: npm install -g clean-css-cli terser
 
     - name: Build site
       run: mkdocs build
@@ -53,8 +53,7 @@ jobs:
       run: |
         for file in site/css/*.css; do
           if [[ "$file" != *.min.css ]]; then
-            npx cssnano "$file" "$file.tmp"
-            mv "$file.tmp" "$file"
+            cleancss -O1 -o "$file" "$file"
           fi
         done
 
