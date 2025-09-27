@@ -33,14 +33,14 @@ jobs:
 
     - name: Lint CSS files
       run: |
-        if [ -d "site/css" ]; then
-          npx stylelint "site/css/**/*.css" || true
+        if [ -d "customTheme/css" ]; then
+          npx stylelint "customTheme/css/**/*.css" || true
         fi
 
     - name: Check JavaScript syntax
       run: |
-        if [ -d "site/js" ]; then
-          npx eslint "site/js/**/*.js" --no-eslintrc --config='{"extends":"eslint:recommended"}' || true
+        if [ -d "customTheme/js" ]; then
+          npx eslint "customTheme/js/**/*.js" --no-eslintrc --config='{"extends":"eslint:recommended"}' || true
         fi
 
   # Этап 2: Сборка статики с PostCSS
@@ -66,11 +66,11 @@ jobs:
 
     - name: Build CSS with PostCSS
       run: |
-        if [ -d "site/css" ]; then
-          postcss site/css/**/*.css --dir assets/css/ --config postcss.config.js --env production
+        if [ -d "customTheme/css" ]; then
+          postcss customTheme/css/**/*.css --dir assets/css/ --config postcss.config.js --env production
           echo "✅ CSS built with PostCSS"
         else
-          echo "⚠️ No site/css directory found"
+          echo "⚠️ No customTheme/css directory found"
         fi
 
     - name: Minify CSS
@@ -82,9 +82,9 @@ jobs:
 
     - name: Process JavaScript
       run: |
-        if [ -d "site/js" ]; then
+        if [ -d "customTheme/js" ]; then
           mkdir -p assets/js
-          for jsfile in site/js/*.js; do
+          for jsfile in customTheme/js/*.js; do
             if [ -f "$jsfile" ]; then
               filename=$(basename "$jsfile")
               npx terser "$jsfile" -o "assets/js/${filename}" --compress --mangle
@@ -97,7 +97,8 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: frontend-assets
-        path: assets/
+        path: |
+          assets/
         retention-days: 1
 
   # Этап 3: Валидация HTML
