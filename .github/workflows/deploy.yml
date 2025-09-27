@@ -33,14 +33,14 @@ jobs:
 
     - name: Lint CSS files
       run: |
-        if [ -d "src/css" ]; then
-          npx stylelint "src/css/**/*.css" || true
+        if [ -d "site/css" ]; then
+          npx stylelint "site/css/**/*.css" || true
         fi
 
     - name: Check JavaScript syntax
       run: |
-        if [ -d "src/js" ]; then
-          npx eslint "src/js/**/*.js" --no-eslintrc --config='{"extends":"eslint:recommended"}' || true
+        if [ -d "site/js" ]; then
+          npx eslint "site/js/**/*.js" --no-eslintrc --config='{"extends":"eslint:recommended"}' || true
         fi
 
   # Этап 2: Сборка статики с PostCSS
@@ -66,11 +66,11 @@ jobs:
 
     - name: Build CSS with PostCSS
       run: |
-        if [ -d "src/css" ]; then
-          postcss src/css/**/*.css --dir assets/css/ --config postcss.config.js --env production
+        if [ -d "site/css" ]; then
+          postcss site/css/**/*.css --dir assets/css/ --config postcss.config.js --env production
           echo "✅ CSS built with PostCSS"
         else
-          echo "⚠️ No src/css directory found"
+          echo "⚠️ No site/css directory found"
         fi
 
     - name: Minify CSS
@@ -82,9 +82,9 @@ jobs:
 
     - name: Process JavaScript
       run: |
-        if [ -d "src/js" ]; then
+        if [ -d "site/js" ]; then
           mkdir -p assets/js
-          for jsfile in src/js/*.js; do
+          for jsfile in site/js/*.js; do
             if [ -f "$jsfile" ]; then
               filename=$(basename "$jsfile")
               npx terser "$jsfile" -o "assets/js/${filename}" --compress --mangle
