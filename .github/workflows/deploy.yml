@@ -36,16 +36,27 @@ jobs:
         wget -q https://github.com/validator/validator/releases/latest/download/vnu.linux.zip
         unzip -q vnu.linux.zip
         
-        for file in $(find . -name "*.html"); do
-          echo "Validating $file"
+        for file in $(find ./site -name "*.html"); do
           ./vnu-runtime-image/bin/vnu "$file" || true
         done
 
     - name: Minify JS
-      run: npx terser script.js -o script.min.js --compress --mangle
+      run: |
+        for file in site/*.js; do
+          if [[ "$file" != *.min.js ]]; then
+            npx terser "$file" --compress --mangle > "$file.tmp"
+            mv "$file.tmp" "$file"
+          fi
+        done
 
     - name: Minify CSS
-      run: npx cssnano style.css style.min.css
+      run: |
+        for file in site/*.css; do
+          if [[ "$file" != *.min.css ]]; then
+            npx cssnano "$file" "$file.tmp"
+            mv "$file.tmp" "$file"
+          fi
+        done
 
     - name: Deploy to GitHub Pages
       if: github.ref == 'refs/heads/main'
