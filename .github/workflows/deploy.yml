@@ -11,7 +11,6 @@ env:
   PYTHON_VERSION: '3.10'
 
 jobs:
-  # Этап 1: Тестирование и валидация фронтенда
   test-frontend:
     name: Test Frontend Assets
     runs-on: ubuntu-latest
@@ -43,7 +42,6 @@ jobs:
           npx eslint "customTheme/js/**/*.js" --no-eslintrc --config='{"extends":"eslint:recommended"}' || true
         fi
 
-  # Этап 2: Сборка статики с PostCSS
   build-assets:
     name: Build Frontend Assets
     runs-on: ubuntu-latest
@@ -68,16 +66,12 @@ jobs:
       run: |
         if [ -d "customTheme/css" ]; then
           postcss customTheme/css/**/*.css --dir assets/css/ --config postcss.config.js --env production
-          echo "✅ CSS built with PostCSS"
-        else
-          echo "⚠️ No customTheme/css directory found"
         fi
 
     - name: Minify CSS
       run: |
         if [ -d "assets/css" ]; then
           find assets/css -name "*.css" -exec npx cleancss -o {} {} \;
-          echo "✅ CSS minified"
         fi
 
     - name: Process JavaScript
@@ -90,7 +84,6 @@ jobs:
               npx terser "$jsfile" -o "assets/js/${filename}" --compress --mangle
             fi
           done
-          echo "✅ JavaScript processed"
         fi
 
     - name: Upload assets artifact
@@ -130,7 +123,6 @@ jobs:
     - name: Build site for validation
       run: |
         mkdocs build --site-dir ./build --strict
-        echo "✅ Site built for validation"
 
     - name: Install html5validator
       run: pip install html5validator
@@ -146,7 +138,6 @@ jobs:
         pip install linkchecker
         linkchecker build/ --check-extern --no-status --no-warnings || true
 
-  # Этап 4: Сборка сайта с минификацией
   build-site:
     name: Build Site with Minification
     runs-on: ubuntu-latest
@@ -170,7 +161,6 @@ jobs:
     - name: Install build dependencies
       run: |
         pip install mkdocs mkdocs-material
-        pip install mkdocs-minify-plugin mkdocs-redirects html-minifier-terser
 
     - name: Build site with minification
       run: |
@@ -190,15 +180,13 @@ jobs:
             --minify-css true \
             --minify-js true \
             -o {} {} \;
-          echo "✅ HTML minified"
         fi
 
-  # Этап 5: Деплой на GitHub Pages
   deploy:
     name: Deploy to GitHub Pages
     runs-on: ubuntu-latest
     needs: build-site
-    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+    if: github.ref == 'refs/heads/main'
 
     permissions:
       contents: write
